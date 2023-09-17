@@ -9,6 +9,11 @@
             font-family: Arial, sans-serif;
             text-align: center;
         }
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
         .button {
             width: 100px;
             height: 100px;
@@ -24,7 +29,7 @@
             cursor: pointer;
         }
         .reset-button {
-            width: 100px;
+            width: 200px;
             height: 40px;
             margin: 10px;
             font-size: 16px;
@@ -46,7 +51,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.js"></script>
     <script>
         // JavaScript code to implement the button color changer with synchronization
-        const buttons = document.querySelectorAll(".button");
+        const buttonContainer = document.querySelector(".button-container");
         const resetButton = document.getElementById("resetButton");
 
         const socket = io(); // Connect to the server via WebSocket
@@ -59,24 +64,38 @@
 
         // Function to check if all buttons are green
         function allButtonsGreen() {
+            const buttons = document.querySelectorAll(".button");
             return Array.from(buttons).every(button => button.style.backgroundColor === "green");
         }
 
         // Function to revert all buttons to white
         function revertToWhite() {
+            const buttons = document.querySelectorAll(".button");
             buttons.forEach(button => {
                 button.style.backgroundColor = "white";
             });
         }
 
+        // Function to generate buttons with numbers 1 through 10
+        function generateButtons() {
+            for (let i = 1; i <= 10; i++) {
+                const button = document.createElement("div");
+                button.className = "button";
+                button.id = `button${i}`;
+                button.textContent = i;
+                buttonContainer.appendChild(button);
+            }
+        }
+
         // Add click event listeners to the buttons
-        buttons.forEach(button => {
-            button.addEventListener("click", () => {
+        buttonContainer.addEventListener("click", (event) => {
+            if (event.target.classList.contains("button")) {
+                const button = event.target;
                 changeColor(button);
                 if (allButtonsGreen()) {
                     revertToWhite();
                 }
-            });
+            }
         });
 
         // Add click event listener to the reset button
@@ -100,6 +119,9 @@
         socket.on('resetClick', () => {
             revertToWhite();
         });
+
+        // Generate the buttons when the page loads
+        generateButtons();
     </script>
 </body>
 </html>
