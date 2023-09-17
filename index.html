@@ -3,39 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Click Counter</title>
+    <title>Button Click Game</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
         }
-        #counter {
-            font-size: 24px;
-            margin-bottom: 20px;
-        }
-        #clickButton {
-            padding: 10px 20px;
+        .button {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            margin: 5px;
             font-size: 18px;
+            background-color: white;
             cursor: pointer;
+            border: 1px solid #ccc;
+        }
+        .button.green {
+            background-color: green;
         }
     </style>
 </head>
 <body>
-    <h1>Click Counter</h1>
-    <p>Click the button to increase the count:</p>
-    <p id="counter">0</p>
-    <button id="clickButton">Click me</button>
+    <h1>Button Click Game</h1>
+    <p>Click the buttons to turn them green. Once all buttons are green, they will reset to white.</p>
+    <div id="buttonContainer">
+        <!-- Generate buttons dynamically -->
+    </div>
 
     <script>
-        // JavaScript code to implement the click counter
-        let count = 0;
-        const counter = document.getElementById("counter");
-        const clickButton = document.getElementById("clickButton");
+        // JavaScript code to implement the button click game
+        const buttonContainer = document.getElementById("buttonContainer");
+        const totalButtons = 60;
+        let clickedButtons = 0;
 
-        clickButton.addEventListener("click", function() {
-            count++;
-            counter.textContent = count;
-        });
+        // Function to create buttons
+        function createButtons() {
+            for (let i = 1; i <= totalButtons; i++) {
+                const button = document.createElement("div");
+                button.className = "button";
+                button.textContent = i;
+
+                button.addEventListener("click", () => {
+                    if (!button.classList.contains("green")) {
+                        button.classList.add("green");
+                        clickedButtons++;
+
+                        if (clickedButtons === totalButtons) {
+                            setTimeout(() => {
+                                resetButtons();
+                            }, 1000);
+                        }
+                    }
+                });
+
+                buttonContainer.appendChild(button);
+            }
+        }
+
+        // Function to reset buttons to white
+        function resetButtons() {
+            const buttons = document.querySelectorAll(".button");
+            buttons.forEach(button => {
+                button.classList.remove("green");
+            });
+            clickedButtons = 0;
+        }
+
+        createButtons();
     </script>
 </body>
 </html>
