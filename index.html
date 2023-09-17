@@ -3,74 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Button Click Game</title>
+    <title>Button Color Changer</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
         }
         .button {
-            display: inline-block;
-            width: 40px;
-            height: 40px;
-            margin: 5px;
-            font-size: 18px;
+            width: 100px;
+            height: 100px;
+            margin: 10px;
+            font-size: 24px;
             background-color: white;
-            cursor: pointer;
             border: 1px solid #ccc;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
         }
-        .button.green {
-            background-color: green;
+        .reset-button {
+            width: 100px;
+            height: 40px;
+            margin: 10px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <h1>Button Click Game</h1>
-    <p>Click the buttons to turn them green. Once all buttons are green, they will reset to white.</p>
-    <div id="buttonContainer">
-        <!-- Generate buttons dynamically -->
+    <h1>Button Color Changer</h1>
+    <div class="button-container">
+        <!-- Generate buttons dynamically using JavaScript -->
     </div>
+    <button class="reset-button" id="resetButton">Reset Colors</button>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.js"></script>
     <script>
-        // JavaScript code to implement the button click game
-        const buttonContainer = document.getElementById("buttonContainer");
-        const totalButtons = 60;
-        let clickedButtons = 0;
+        // JavaScript code to implement the button color changer with synchronization
+        const buttons = document.querySelectorAll(".button");
+        const resetButton = document.getElementById("resetButton");
 
-        // Function to create buttons
-        function createButtons() {
-            for (let i = 1; i <= totalButtons; i++) {
-                const button = document.createElement("div");
-                button.className = "button";
-                button.textContent = i;
+        const socket = io(); // Connect to the server via WebSocket
 
-                button.addEventListener("click", () => {
-                    if (!button.classList.contains("green")) {
-                        button.classList.add("green");
-                        clickedButtons++;
-
-                        if (clickedButtons === totalButtons) {
-                            setTimeout(() => {
-                                resetButtons();
-                            }, 1000);
-                        }
-                    }
-                });
-
-                buttonContainer.appendChild(button);
-            }
+        // Function to change the button color to green
+        function changeColor(button) {
+            button.style.backgroundColor = "green";
+            socket.emit('buttonClick', button.id); // Notify the server about the button click
         }
 
-        // Function to reset buttons to white
-        function resetButtons() {
-            const buttons = document.querySelectorAll(".button");
+        // Function to check if all buttons are green
+        function allButtonsGreen() {
+            return Array.from(buttons).every(button => button.style.backgroundColor === "green");
+        }
+
+        // Function to revert all buttons to white
+        function revertToWhite() {
             buttons.forEach(button => {
-                button.classList.remove("green");
+                button.style.backgroundColor = "white";
             });
-            clickedButtons = 0;
         }
 
-        createButtons();
+        // Add click event listeners to the buttons
+        buttons.forEach(button => {
+            button.addEventListener("click", () => {
+                changeColor(button);
+                if (allButtonsGreen()) {
+                    revertToWhite();
+                }
+            });
+        });
+
+        // Add click event listener to the reset button
+        resetButton.addEventListener("click", () => {
+            revertToWhite();
+            socket.emit('resetClick'); // Notify the server about the reset button click
+        });
+
+        // Listen for button click events from the server
+        socket.on('buttonClick', (buttonId) => {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                changeColor(button);
+                if (allButtonsGreen()) {
+                    revertToWhite();
+                }
+            }
+        });
+
+        // Listen for reset button click events from the server
+        socket.on('resetClick', () => {
+            revertToWhite();
+        });
     </script>
 </body>
 </html>
